@@ -13,10 +13,10 @@ class ChatGPT():
     def __init__(self, api_key=None):
         openai.api_key = api_key
 
-        # initialize parameters
-        self.model = "gpt-3.5-turbo"
-        self.max_tokens = 1024
-        self.temperature = 0.7
+        # initialize parameters, currently not used
+        # self.model = "gpt-3.5-turbo"
+        # self.max_tokens = 1024
+        # self.temperature = 0.7
 
         # initialize messages
         self.messages = {}
