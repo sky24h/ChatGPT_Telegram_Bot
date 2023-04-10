@@ -24,4 +24,5 @@ Simple implementation using ChatGPT (and GPT-4) API, deployed as a Telegram Bot.
 
 
 # Example
-![alt text](example.png)
+<img src="example.png" alt="alt text" width="300">
+
