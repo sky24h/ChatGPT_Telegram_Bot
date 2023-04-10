@@ -1,7 +1,7 @@
-# chatgpt_telegram_bot
+# ChatGPT Telegram Bot
 Simple implementation using ChatGPT (and GPT-4) API, deployed as a Telegram Bot.
 
-# How to Use:
+# How to Use
 1. Environmental requirements:
 
     A server (only tested on Linux)
@@ -12,7 +12,7 @@ Simple implementation using ChatGPT (and GPT-4) API, deployed as a Telegram Bot.
 
 2. API keys
 
-    fill your OpenAI API key and Telegram Bot Token in the 'config.json' file.
+    Fill your **OpenAI API key** and **Telegram Bot Token** in the 'config.json' file.
   
     You can obtain OpenAI API key from your openai account, specifically, access to GPT-4 is currently limited to invited users only.
   
@@ -21,3 +21,8 @@ Simple implementation using ChatGPT (and GPT-4) API, deployed as a Telegram Bot.
 3. Run
 
     python app.py
+
+
+# Example
+<img src="example.png" alt="alt text" width="300">
+
