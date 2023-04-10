@@ -18,9 +18,8 @@ class ChatGPT():
         self.max_tokens = 1024
         self.temperature = 0.7
 
-        # initialize messages and token counts
+        # initialize messages
         self.messages = {}
-        self.tokens = {}
         self.last_time = {}
         self.use_GPT4 = {}
         # use GPT-3.5-turbo by default, use GPT-4 if user sends /gpt4
@@ -38,7 +37,6 @@ class ChatGPT():
     def reset_chat(self, user_id, system_prompt):
         # reset chat
         self.messages[user_id] = []
-        self.tokens[user_id] = 0
         self.last_time[user_id] = datetime.datetime.now()
         self.messages[user_id].append(self._create_system_prompt(system_prompt))
 

@@ -115,7 +115,6 @@ async def answer(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     user_message = update.message.text
     try:
-        # get chatgpt answer and update messages and tokens, except getting clear or exit
         if user_message == "clear" or user_message == "exit":
             chatgpt.reset_chat(user_id, chat_prompt)
             logger.info("User: " + str(user_id) + " Clear chat history")
