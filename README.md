@@ -1,4 +1,4 @@
-# Chatgpt Telegram Bot
+# ChatGPT Telegram Bot
 Simple implementation using ChatGPT (and GPT-4) API, deployed as a Telegram Bot.
 
 # How to Use:
