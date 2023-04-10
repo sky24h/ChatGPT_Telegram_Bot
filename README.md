@@ -1,7 +1,7 @@
 # ChatGPT Telegram Bot
 Simple implementation using ChatGPT (and GPT-4) API, deployed as a Telegram Bot.
 
-# How to Use:
+# How to Use
 1. Environmental requirements:
 
     A server (only tested on Linux)
@@ -21,3 +21,7 @@ Simple implementation using ChatGPT (and GPT-4) API, deployed as a Telegram Bot.
 3. Run
 
     python app.py
+
+
+# Example
+![alt text](example.png)
