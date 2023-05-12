@@ -34,11 +34,28 @@ class ChatGPT():
     def _create_system_prompt(self, system_input):
         return {"role": "system", "content": system_input}
 
-    def reset_chat(self, user_id, system_prompt):
+    def reset_chat(self, user_id, system_prompt=None):
+        if system_prompt is None:
+            if user_id not in self.messages or len(self.messages[user_id]) == 0:
+                system_prompt = chat_prompt
+            else:
+                # keep current system prompt
+                system_prompt = self.messages[user_id][0]["content"]
+
         # reset chat
         self.messages[user_id] = []
         self.last_time[user_id] = datetime.datetime.now()
         self.messages[user_id].append(self._create_system_prompt(system_prompt))
+
+    def reduce_messeges(self, user_id, e):
+        if len(self.messages[user_id]) > 3:
+            # remove half of the messages
+            remove_length = (len(self.messages[user_id]) - 1) // 2
+            self.messages[user_id] = self.messages[user_id][:1] + self.messages[user_id][1 + remove_length:]
+            message = "User: " + str(user_id) + " Forget first two messages to reduce length"
+            return False, message
+        else:
+            raise Exception(error)
 
     def switch_api(self, user_id):
         self.last_time[user_id] = datetime.datetime.now()
@@ -64,7 +81,7 @@ class ChatGPT():
             model = "gpt-4"
         else:
             model = "gpt-3.5-turbo"
-
+        print("Current message: {}".format(str(self.messages[user_id])))
         completion = openai.ChatCompletion.create(model=model, stream=True, messages=self.messages[user_id])
         status = ""
         answer = pre_answer + ""
@@ -77,7 +94,7 @@ class ChatGPT():
                     status = "streaming"
                     answer += delta["content"]
                     # gap set to 20 to avoid too many requests, and if match the pauses symbol, send the message
-                    if len(answer) - len(last_answer) > 20 or answer[-1] in pauses:
+                    if len(answer) - len(last_answer) > 10 and answer[-1] in pauses:
                             last_answer = answer
                     else:
                         continue
