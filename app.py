@@ -4,6 +4,7 @@ import asyncio
 import signal
 import os
 import json
+import time
 
 from telegram import Update
 from telegram.constants import ParseMode
