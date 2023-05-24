@@ -140,7 +140,7 @@ async def answer(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     # check if user in the whitelist
     if user_id not in whitelist:
-        await context.bot.send_message(chat_id=update.effective_chat.id, text="Sorry, this bot is for private use only, if you are interested to build your own bot, please visit https://github.com/Sky24H/ChatGPT_Telegram_Bot for complete source code.")
+        await context.bot.send_message(chat_id=update.effective_chat.id, text="Sorry, this bot is for private use only, the developer cannot afford excessive usage. However, if you are interested in building your own bot, please feel free to visit the following link for the complete source code: https://github.com/Sky24H/ChatGPT_Telegram_Bot")
         return None
 
     user_message = update.message.text
