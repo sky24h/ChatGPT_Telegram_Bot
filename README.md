@@ -20,8 +20,14 @@ However, I cannot guarantee that all issues will be addressed or resolved in a t
     You can obtain OpenAI API key from your openai account, specifically, access to GPT-4 is currently limited to invited users only.
   
     To create a Telegram Bot Token, please refer to https://core.telegram.org/bots#how-do-i-create-a-bot.
-  
-3. Run
+
+3. White list
+
+    Fill telegram user id in the 'whitelist.json' file, only users in the white list can access the bot.
+    
+    You can get your user id by sending a message to the bot and then check the log file.
+
+4. Run
 
     python app.py
 
