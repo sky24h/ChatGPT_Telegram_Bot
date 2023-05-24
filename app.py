@@ -23,6 +23,11 @@ telegram_bot_api = config['telegram_bot_token']
 
 chatgpt = ChatGPT(config['openai_api_key'])
 
+# get whitelist from whitelist.json
+with open(os.path.join(os.path.dirname(__file__), 'whitelist.json'), 'r') as f:
+    ids = json.load(f)
+whitelist = [ids[user] for user in ids]
+
 # default prompt
 chat_prompt = "You are ChatGPT, a large language model trained by OpenAI. Answer as concisely as possible using the same language to the user"
 
@@ -132,6 +137,12 @@ async def gpt4(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def answer(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # get user id and message
     user_id = update.effective_user.id
+
+    # check if user in the whitelist
+    if user_id not in whitelist:
+        await context.bot.send_message(chat_id=update.effective_chat.id, text="Sorry, this bot is for private use only, if you are interested to build your own bot, please visit https://github.com/Sky24H/ChatGPT_Telegram_Bot for complete source code.")
+        return None
+
     user_message = update.message.text
     # check if user wants to set custom prompt
     custom_prompt, custom_error = check_cutstom_prompt(user_message)
