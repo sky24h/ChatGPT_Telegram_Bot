@@ -201,6 +201,9 @@ async def answer(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
     except Exception as e:
+        if 'TOOFREQUNET' in str(e):
+            # avoid too frequent request within 2 seconds, just ignore
+            return None
         # if error, return error message
         answer = "Oops, something went wrong. Please try again later or contact @sky24h for help."
         answer += "\n\nError Message: " + str(e)

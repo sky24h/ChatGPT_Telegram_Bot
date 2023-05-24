@@ -68,11 +68,17 @@ class ChatGPT():
 
     # chat function
     def chat(self, user_id, user_message):
+        # if user_id not in self.messages or over 24 hours, reset chat
         if (user_id not in self.messages) or (user_id in self.last_time and self.last_time[user_id] < datetime.datetime.now() - datetime.timedelta(hours=24)):
             pre_answer = "Welcome to ChatGPT! You are in Default Chat Mode\n\n"
             self.reset_chat(user_id, chat_prompt)
         else:
             pre_answer = ""
+
+        # prevent request too frequently, 2 seconds, ingore messages
+        # !TODO find a better way to handle this, currently the reason cause this is unknown
+        if user_id in self.last_time and self.last_time[user_id] > datetime.datetime.now() - datetime.timedelta(seconds=2):
+            raise Exception("TOOFREQUNET: too frequent requests")
 
         # send user_message to chatgpt
         self.messages[user_id].append(self._create_user_prompt(user_message))
