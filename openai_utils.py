@@ -2,6 +2,7 @@ import json
 import openai
 import datetime
 import os
+import time
 
 # pauses symbols
 pauses = ',.!?;:、。！？；：'
@@ -23,6 +24,9 @@ class ChatGPT():
         self.last_time = {}
         self.use_GPT4 = {}
         # use GPT-3.5-turbo by default, use GPT-4 if user sends /gpt4
+
+        # record last time of sending request to openai, prevent too frequent requests
+        self.last_time_request = {'time': datetime.datetime.now(), 'user_id': None}
 
     # create prompts
     def _create_user_prompt(self, user_input):
@@ -66,6 +70,22 @@ class ChatGPT():
             self.use_GPT4[user_id] = not self.use_GPT4[user_id]
         return 'GPT-4' if self.use_GPT4[user_id] else 'GPT-3.5-turbo'
 
+    def check_overload(self, user_id):
+        # !TODO find a better way to handle this, currently the reason cause this is unknown
+        # check last_time_request, prevent too frequent requests within 2 seconds
+        if datetime.datetime.now() - self.last_time_request['time'] < datetime.timedelta(seconds=2):
+            # if not the same user, wait for 2 seconds
+            if self.last_time_request['user_id'] != user_id:
+                time.sleep(2)
+                self.last_time_request['time'] = datetime.datetime.now()
+                self.last_time_request['user_id'] = user_id
+            # if the same user, ingore this request
+            else:
+                raise Exception("TOOFREQUNET: too frequent requests")
+        else:
+            self.last_time_request['time'] = datetime.datetime.now()
+            self.last_time_request['user_id'] = user_id
+
     # chat function
     def chat(self, user_id, user_message):
         # if user_id not in self.messages or over 24 hours, reset chat
@@ -74,11 +94,6 @@ class ChatGPT():
             self.reset_chat(user_id, chat_prompt)
         else:
             pre_answer = ""
-
-        # prevent request too frequently, 2 seconds, ingore messages
-        # !TODO find a better way to handle this, currently the reason cause this is unknown
-        if user_id in self.last_time and self.last_time[user_id] > datetime.datetime.now() - datetime.timedelta(seconds=2):
-            raise Exception("TOOFREQUNET: too frequent requests")
 
         # send user_message to chatgpt
         self.messages[user_id].append(self._create_user_prompt(user_message))

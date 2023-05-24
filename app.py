@@ -160,6 +160,9 @@ async def answer(update: Update, context: ContextTypes.DEFAULT_TYPE):
         pass
 
     try:
+        # check to prevent overload
+        chatgpt.check_overload(user_id)
+
         if user_message == "clear" or user_message == "exit":
             chatgpt.reset_chat(user_id)
             logger.info("User: " + str(user_id) + " Clear chat history")
@@ -174,7 +177,7 @@ async def answer(update: Update, context: ContextTypes.DEFAULT_TYPE):
             count = 0
             while not Success:
                 count += 1
-                if count > 5:
+                if count > 3:
                     logger.error("User: " + str(user_id) + " Error: Too many times of retry")
                     raise Exception("Too many times of retry")
                 try:
@@ -193,6 +196,11 @@ async def answer(update: Update, context: ContextTypes.DEFAULT_TYPE):
                         logger.info("User: " + str(user_id) + " Current messages are too long, now trying to reduce length.")
                         Success, message_ = chatgpt.reduce_messeges(user_id, e)
                         logger.info(message_)
+                    elif "overloaded" in str(e) or "Timeout" in str(e):
+                        # got overloaded or Timeout from openai, retry after 2 seconds
+                        logger.info("User: " + str(user_id) + " OpenAI overloaded, now retry after 2 seconds.")
+                        time.sleep(2)
+                        continue
                     else:
                         logger.error("User: " + str(user_id) + " Message: " + user_message + " Error: " + str(e))
                         raise e
@@ -201,13 +209,13 @@ async def answer(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
     except Exception as e:
+        logger.error("User: " + str(user_id) + " Message: " + user_message + " Error: " + str(e))
         if 'TOOFREQUNET' in str(e):
             # avoid too frequent request within 2 seconds, just ignore
             return None
         # if error, return error message
         answer = "Oops, something went wrong. Please try again later or contact @sky24h for help."
         answer += "\n\nError Message: " + str(e)
-        logger.error("User: " + str(user_id) + " Message: " + user_message + " Error: " + str(e))
         traceback.print_exc()
         await context.bot.edit_message_text(answer, chat_id=placeholder_message.chat_id, message_id=placeholder_message.message_id)
 
