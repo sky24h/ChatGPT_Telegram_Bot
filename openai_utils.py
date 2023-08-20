@@ -5,12 +5,13 @@ import os
 import time
 
 # pauses symbols
-pauses = ',.!?;:、。！？；：'
+pauses = ",.!?;:、。！？；："
 
 # default prompt
 chat_prompt = "You are ChatGPT, a large language model trained by OpenAI. Answer as concisely as possible using the same language to the user"
 
-class ChatGPT():
+
+class ChatGPT:
     def __init__(self, api_key=None):
         openai.api_key = api_key
 
@@ -26,7 +27,7 @@ class ChatGPT():
         # use GPT-3.5-turbo by default, use GPT-4 if user sends /gpt4
 
         # record last time of sending request to openai, prevent too frequent requests
-        self.last_time_request = {'time': datetime.datetime.now(), 'user_id': None}
+        self.last_time_request = {"time": datetime.datetime.now(), "user_id": None}
 
     # create prompts
     def _create_user_prompt(self, user_input):
@@ -55,7 +56,7 @@ class ChatGPT():
         if len(self.messages[user_id]) > 3:
             # remove half of the messages
             remove_length = (len(self.messages[user_id]) - 1) // 2
-            self.messages[user_id] = self.messages[user_id][:1] + self.messages[user_id][1 + remove_length:]
+            self.messages[user_id] = self.messages[user_id][:1] + self.messages[user_id][1 + remove_length :]
             message = "User: " + str(user_id) + " Forget first two messages to reduce length"
             return False, message
         else:
@@ -68,28 +69,30 @@ class ChatGPT():
             self.use_GPT4[user_id] = True
         else:
             self.use_GPT4[user_id] = not self.use_GPT4[user_id]
-        return 'GPT-4' if self.use_GPT4[user_id] else 'GPT-3.5-turbo'
+        return "GPT-4" if self.use_GPT4[user_id] else "gpt-3.5-turbo-16k"
 
     def check_overload(self, user_id):
         # !TODO find a better way to handle this, currently the reason cause this is unknown
         # check last_time_request, prevent too frequent requests within 2 seconds
-        if datetime.datetime.now() - self.last_time_request['time'] < datetime.timedelta(seconds=2):
+        if datetime.datetime.now() - self.last_time_request["time"] < datetime.timedelta(seconds=2):
             # if not the same user, wait for 2 seconds
-            if self.last_time_request['user_id'] != user_id:
+            if self.last_time_request["user_id"] != user_id:
                 time.sleep(2)
-                self.last_time_request['time'] = datetime.datetime.now()
-                self.last_time_request['user_id'] = user_id
+                self.last_time_request["time"] = datetime.datetime.now()
+                self.last_time_request["user_id"] = user_id
             # if the same user, ingore this request
             else:
                 raise Exception("TOOFREQUNET: too frequent requests")
         else:
-            self.last_time_request['time'] = datetime.datetime.now()
-            self.last_time_request['user_id'] = user_id
+            self.last_time_request["time"] = datetime.datetime.now()
+            self.last_time_request["user_id"] = user_id
 
     # chat function
     def chat(self, user_id, user_message):
         # if user_id not in self.messages or over 24 hours, reset chat
-        if (user_id not in self.messages) or (user_id in self.last_time and self.last_time[user_id] < datetime.datetime.now() - datetime.timedelta(hours=24)):
+        if (user_id not in self.messages) or (
+            user_id in self.last_time and self.last_time[user_id] < datetime.datetime.now() - datetime.timedelta(hours=24)
+        ):
             pre_answer = "Welcome to ChatGPT! You are in Default Chat Mode\n\n"
             self.reset_chat(user_id, chat_prompt)
         else:
@@ -101,9 +104,10 @@ class ChatGPT():
         if not self.use_GPT4.get(user_id, True):
             model = "gpt-4"
         else:
-            model = "gpt-3.5-turbo"
+            model = "gpt-3.5-turbo-16k"
         print("Current message: {}".format(str(self.messages[user_id])))
-        completion = openai.ChatCompletion.create(model=model, stream=True, messages=self.messages[user_id])
+        # !TODO make temperature adjustable to different users.
+        completion = openai.ChatCompletion.create(model=model, stream=True, messages=self.messages[user_id], temperature=0.7)
         status = ""
         answer = pre_answer + ""
         last_answer = ""
@@ -116,7 +120,7 @@ class ChatGPT():
                     answer += delta["content"]
                     # gap set to 20 to avoid too many requests, and if match the pauses symbol, send the message
                     if len(answer) - len(last_answer) > 10 and answer[-1] in pauses:
-                            last_answer = answer
+                        last_answer = answer
                     else:
                         continue
                 elif delta == {} and c.choices[0].finish_reason == "stop":
@@ -132,10 +136,11 @@ class ChatGPT():
             except Exception as e:
                 raise ValueError("Unexpected ChatGPT response: {} {}".format(c, e))
 
+
 if __name__ == "__main__":
-    with open(os.path.join(os.path.dirname(__file__), 'config.json'), 'r') as f:
+    with open(os.path.join(os.path.dirname(__file__), "config.json"), "r") as f:
         config = json.load(f)
-    chatgpt = ChatGPT(config['openai_api_key'])
+    chatgpt = ChatGPT(config["openai_api_key"])
     user_id = "test"
     user_message = "Hello"
 
