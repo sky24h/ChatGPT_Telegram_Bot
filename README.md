@@ -33,6 +33,10 @@ However, I cannot guarantee that all issues will be addressed or resolved in a t
 
 
 # Example
-<img src="example.png" alt="alt text" width="300">
+
+
+https://github.com/sky24h/ChatGPT_Telegram_Bot/assets/26270672/4e929034-838b-4126-8d8f-7be5a98262fa
+
+
 
 
