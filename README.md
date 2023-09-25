@@ -35,7 +35,10 @@ However, I cannot guarantee that all issues will be addressed or resolved in a t
 # Example
 
 
-https://github.com/sky24h/ChatGPT_Telegram_Bot/assets/26270672/4e929034-838b-4126-8d8f-7be5a98262fa
+https://github.com/sky24h/ChatGPT_Telegram_Bot/assets/26270672/6b6074a2-7712-44f3-9d2e-a657324dcffe
+
+
+
 
 
 
