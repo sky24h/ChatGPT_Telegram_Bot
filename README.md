@@ -25,7 +25,7 @@ However, I cannot guarantee that all issues will be addressed or resolved in a t
 
     Fill telegram user id in the 'whitelist.json' file, only users in the white list can access the bot.
     
-    You can get your user id by sending messege to (userinfo_bot)[https://telegram.me/userinfobot].
+    You can get your user id by sending messege to [userinfo_bot](https://telegram.me/userinfobot).
 
 4. Run
 
