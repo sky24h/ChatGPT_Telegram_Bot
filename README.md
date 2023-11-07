@@ -25,7 +25,7 @@ However, I cannot guarantee that all issues will be addressed or resolved in a t
 
     Fill telegram user id in the 'whitelist.json' file, only users in the white list can access the bot.
     
-    You can get your user id by sending a message to the bot and then check the log file.
+    You can get your user id by sending messege to [userinfo_bot](https://telegram.me/userinfobot).
 
 4. Run
 
@@ -33,6 +33,17 @@ However, I cannot guarantee that all issues will be addressed or resolved in a t
 
 
 # Example
-<img src="example.png" alt="alt text" width="300">
+
+
+https://github.com/sky24h/ChatGPT_Telegram_Bot/assets/26270672/3985ad66-f965-4ea3-ac0c-fafa36fd4d43
+
+
+
+
+
+
+
+
+
 
 
