@@ -102,9 +102,9 @@ class ChatGPT:
         self.messages[user_id].append(self._create_user_prompt(user_message))
         # if not set or True, use GPT-3.5-turbo, otherwise use GPT-4
         if not self.use_GPT4.get(user_id, True):
-            model = "gpt-4"
+            model = "gpt-4-1106-preview"
         else:
-            model = "gpt-3.5-turbo-16k"
+            model = "gpt-3.5-turbo-1106"
         print("Current message: {}".format(str(self.messages[user_id])))
         # !TODO make temperature adjustable to different users.
         completion = openai.ChatCompletion.create(model=model, stream=True, messages=self.messages[user_id], temperature=0.7)
