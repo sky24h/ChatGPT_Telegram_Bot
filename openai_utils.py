@@ -1,19 +1,19 @@
 import json
-import openai
 import datetime
 import os
 import time
+from openai import OpenAI
 
 # pauses symbols
-pauses = ",.!?;:、。！？；："
+pauses = ".!?;:。！？；："
 
 # default prompt
-chat_prompt = "You are ChatGPT, a large language model trained by OpenAI. Answer as concisely as possible using the same language to the user"
+default_prompt = "You are ChatGPT, a large language model trained by OpenAI. Answer as concisely as possible using the same language to the user"
 
 
 class ChatGPT:
     def __init__(self, api_key=None):
-        openai.api_key = api_key
+        self.client = OpenAI(api_key=api_key)
 
         # initialize parameters, currently not used
         # self.model = "gpt-3.5-turbo"
@@ -42,7 +42,7 @@ class ChatGPT:
     def reset_chat(self, user_id, system_prompt=None):
         if system_prompt is None:
             if user_id not in self.messages or len(self.messages[user_id]) == 0:
-                system_prompt = chat_prompt
+                system_prompt = default_prompt
             else:
                 # keep current system prompt
                 system_prompt = self.messages[user_id][0]["content"]
@@ -89,25 +89,31 @@ class ChatGPT:
 
     # chat function
     def chat(self, user_id, user_message):
+        # decide response interval from 20 to 50.
+        interval = max(20, min(len(user_message) // 5, 50))
+
         # if user_id not in self.messages or over 24 hours, reset chat
         if (user_id not in self.messages) or (
             user_id in self.last_time and self.last_time[user_id] < datetime.datetime.now() - datetime.timedelta(hours=24)
         ):
             pre_answer = "Welcome to ChatGPT! You are in Default Chat Mode\n\n"
-            self.reset_chat(user_id, chat_prompt)
+            self.reset_chat(user_id, default_prompt)
         else:
             pre_answer = ""
 
         # send user_message to chatgpt
         self.messages[user_id].append(self._create_user_prompt(user_message))
-        # if not set or True, use GPT-3.5-turbo, otherwise use GPT-4
-        if not self.use_GPT4.get(user_id, True):
+        # default to use gpt-3.5-turbo
+        if user_id not in self.use_GPT4:
+            self.use_GPT4[user_id] = False
+        # unless set to use gpt-4
+        if self.use_GPT4.get(user_id, True):
             model = "gpt-4-1106-preview"
         else:
             model = "gpt-3.5-turbo-1106"
         print("Current message: {}".format(str(self.messages[user_id])))
         # !TODO make temperature adjustable to different users.
-        completion = openai.ChatCompletion.create(model=model, stream=True, messages=self.messages[user_id], temperature=0.7)
+        completion = self.client.chat.completions.create(model=model, stream=True, messages=self.messages[user_id], temperature=0.7)
         status = ""
         answer = pre_answer + ""
         last_answer = ""
@@ -115,15 +121,15 @@ class ChatGPT:
         for c in completion:
             try:
                 delta = c.choices[0].delta
-                if "content" in delta:
+                if delta.content != "" and delta.content is not None:
                     status = "streaming"
-                    answer += delta["content"]
-                    # gap set to 20 to avoid too many requests, and if match the pauses symbol, send the message
-                    if len(answer) - len(last_answer) > 10 and answer[-1] in pauses:
+                    answer += delta.content
+                    # set interval to avoid too many requests, and if match the pauses symbol, send the message
+                    if len(answer) - len(last_answer) > interval and answer[-1] in pauses:
                         last_answer = answer
                     else:
                         continue
-                elif delta == {} and c.choices[0].finish_reason == "stop":
+                elif delta.content is None and c.choices[0].finish_reason == "stop":
                     status = "finished"
                     self.messages[user_id].append(self._create_chatgpt_answer(answer))
                     self.last_time[user_id] = datetime.datetime.now()
@@ -144,7 +150,7 @@ if __name__ == "__main__":
     user_id = "test"
     user_message = "Hello"
 
-    chatgpt.reset_chat(user_id, chat_prompt)
-    completion = chatgpt.chat("test", "Hello")
+    chatgpt.reset_chat(user_id, default_prompt)
+    completion = chatgpt.chat("test", user_message)
     for c in completion:
         print(c)
