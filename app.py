@@ -188,8 +188,15 @@ async def answer(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if gm.check_user_message(user_message):
             # forward to GM
             logger.info(f"User: {str(user_id)} Use GM {str(user_message)}")
-            await gm.generate(update, context)
-            return None
+            function_arguments = chatgpt.get_prompt(user_message)
+            if isinstance(function_arguments, str):
+                # if function_arguments is a string, then stop here and return the answer
+                answer = function_arguments
+                await update.message.reply_text(answer, reply_to_message_id=update.message.message_id)
+                return None
+            else:
+                await gm.generate(update, context, function_arguments)
+                return None
 
     try:
         # check to prevent overload

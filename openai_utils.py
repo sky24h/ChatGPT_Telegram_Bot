@@ -3,6 +3,7 @@ import datetime
 import os
 import time
 from openai import OpenAI
+from openai.types.chat import ChatCompletionToolParam
 
 # pauses symbols
 pauses = ".!?;:。！？；："
@@ -10,11 +11,38 @@ pauses = ".!?;:。！？；："
 # default prompt
 default_prompt = "You are ChatGPT, a large language model trained by OpenAI. Answer as concisely as possible using the same language to the user"
 
+tools = [
+    # function to generate content
+    ChatCompletionToolParam({
+        "type": "function",
+        "function": {
+            "name": "generate_content",
+            "description": "Generate an image or video based on user input",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "imageOrVideo": {
+                        "type": "integer",
+                        "enum": [0, 1],
+                        "description": "Decide if you want an image or a video, 0 for image, 1 for video",
+                    },
+                    "prompt": {
+                        "type": "string",
+                        "description": "Prompt passed to the model, translate to english if needed. e.g. \"A oil painting by Monet, bridge, river.\"",
+                    },
+                },
+                "required": ["imageOrVideo", "prompt"],
+            },
+        },
+    })
+]
 
 class ChatGPT:
     def __init__(self, api_key=None):
         self.client = OpenAI(api_key=api_key)
-
+        # fast and cheap model
+        self.fast_and_cheap_model = "gpt-3.5-turbo-1106"
+        self.advanced_model = "gpt-4-1106-preview"
         # initialize parameters, currently not used
         # self.model = "gpt-3.5-turbo"
         # self.max_tokens = 1024
@@ -87,6 +115,26 @@ class ChatGPT:
             self.last_time_request["time"] = datetime.datetime.now()
             self.last_time_request["user_id"] = user_id
 
+    def get_prompt(self, user_message):
+        response = self.client.chat.completions.create(
+            model=self.fast_and_cheap_model,
+            temperature=0.0,
+            messages = [self._create_user_prompt(user_message[1:])],
+            tools=tools,
+            tool_choice="auto",  # auto is default, but we'll be explicit
+        )
+        if response.choices[0].finish_reason == "tool_calls":
+            print("Tools were used to complete the prompt.")
+            tool_calls = response.choices[0].message.tool_calls
+            for tool_call in tool_calls:
+                if tool_call.type == "function":
+                    function_arguments = tool_call.function.arguments
+                    print(f"function_arguments: {function_arguments}")
+                    return eval(function_arguments)
+        else:
+            print("No tools were used to complete the prompt.")
+            return response.choices[0].message.content
+
     # chat function
     def chat(self, user_id, user_message):
         # decide response interval from 20 to 50.
@@ -108,9 +156,9 @@ class ChatGPT:
             self.use_GPT4[user_id] = False
         # unless set to use gpt-4
         if self.use_GPT4.get(user_id, True):
-            model = "gpt-4-1106-preview"
+            model = self.advanced_model
         else:
-            model = "gpt-3.5-turbo-1106"
+            model = self.fast_and_cheap_model
         print("Current message: {}".format(str(self.messages[user_id])))
         # !TODO make temperature adjustable to different users.
         completion = self.client.chat.completions.create(model=model, stream=True, messages=self.messages[user_id], temperature=0.7)
