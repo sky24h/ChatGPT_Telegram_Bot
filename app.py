@@ -1,16 +1,16 @@
+import os
+import time
+import json
+import signal
+import asyncio
 import datetime
 import traceback
-import asyncio
-import signal
-import os
-import json
-import time
-
+from md2tgmd import escape
 from telegram import Update
 from telegram.ext import filters, MessageHandler, ApplicationBuilder, CommandHandler, ContextTypes
+from telegram.constants import ParseMode
 
 import logging
-
 # save log to file
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -56,11 +56,11 @@ welcome_message += (
 )
 
 # python prompt
-python_prompt  = 'You are a concise Python assistant that responds to future inquiries within ["""] blocks.'
+python_prompt  = "You are a concise Python assistant that responds to future inquiries within [```] blocks."
 python_welcome = "Welcome to Python Mode! You can ask me to write Python code according to your needs!"
 
 # cpp prompt
-cpp_prompt  = 'You are a concise C++ assistant that responds to future inquiries within ["""] blocks.'
+cpp_prompt  = "You are a concise C++ assistant that responds to future inquiries within [```] blocks."
 cpp_welcome = "Welcome to C++ Mode! You can ask me to write C++ code according to your needs!"
 
 # japanese prompt
@@ -185,10 +185,13 @@ async def answer(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return None
 
     if use_gm:
-        if gm.check_user_message(user_message):
-            # forward to GM
+        timeout_s = 10
+        signal.signal(signal.SIGALRM, handle_timeout)
+        signal.alarm(timeout_s)
+        generate, function_arguments = gm.check_user_message(chatgpt, user_message)
+        signal.alarm(0)        
+        if generate:
             logger.info(f"User: {str(user_id)} Use GM {str(user_message)}")
-            function_arguments = chatgpt.get_prompt(user_message)
             if isinstance(function_arguments, str):
                 # if function_arguments is a string, then stop here and return the answer
                 answer = function_arguments
@@ -225,7 +228,7 @@ async def answer(update: Update, context: ContextTypes.DEFAULT_TYPE):
                         logger.info(f"User:{str(user_id)} Message: {str(user_message)} Answer: {answer}")
                     else:
                         raise Exception(f"Unknown status: {status}")
-                    await context.bot.edit_message_text(answer, chat_id=ph_message.chat_id, message_id=ph_message.message_id)
+                    await context.bot.edit_message_text(escape(answer), chat_id=ph_message.chat_id, message_id=ph_message.message_id, parse_mode=ParseMode.MARKDOWN_V2)
 
             except Exception as e:
                 if "maximum" in str(e):
@@ -253,7 +256,7 @@ async def answer(update: Update, context: ContextTypes.DEFAULT_TYPE):
         answer += "\n\nError Message: " + str(e)
         traceback.print_exc()
         try:
-            await context.bot.edit_message_text(answer, chat_id=ph_message.chat_id, message_id=ph_message.message_id)
+            await context.bot.edit_message_text(escape(answer), chat_id=ph_message.chat_id, message_id=ph_message.message_id, parse_mode=ParseMode.MARKDOWN_V2)
         except UnboundLocalError:
             await update.message.reply_text(answer)
 

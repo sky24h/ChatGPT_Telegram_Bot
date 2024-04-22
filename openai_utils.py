@@ -1,7 +1,7 @@
-import json
-import datetime
 import os
 import time
+import json
+import datetime
 from openai import OpenAI
 from openai.types.chat import ChatCompletionToolParam
 
@@ -41,8 +41,8 @@ class ChatGPT:
     def __init__(self, api_key=None):
         self.client = OpenAI(api_key=api_key)
         # fast and cheap model
-        self.fast_and_cheap_model = "gpt-3.5-turbo-1106"
-        self.advanced_model = "gpt-4-1106-preview"
+        self.fast_and_cheap_model = "gpt-3.5-turbo"
+        self.advanced_model = "gpt-4-turbo"
         # initialize parameters, currently not used
         # self.model = "gpt-3.5-turbo"
         # self.max_tokens = 1024
@@ -172,6 +172,9 @@ class ChatGPT:
                 if delta.content != "" and delta.content is not None:
                     status = "streaming"
                     answer += delta.content
+                    # only return whole code block
+                    if answer.count("```") != 0:
+                        continue
                     # set interval to avoid too many requests, and if match the pauses symbol, send the message
                     if len(answer) - len(last_answer) > interval and answer[-1] in pauses:
                         last_answer = answer
